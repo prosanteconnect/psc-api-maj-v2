@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -25,6 +26,8 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     private final PsRefRepository psRefRepository;
     private final MongoTemplate mongoTemplate;
 
+    private final String OTHER_IDS = "otherIds";
+
     public PsApiDelegateImpl(PsRepository psRepository, PsRefRepository psRefRepository, MongoTemplate mongoTemplate) {
         this.psRepository = psRepository;
         this.psRefRepository = psRefRepository;
@@ -32,7 +35,9 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     }
 
     @Override
-    public ResponseEntity<Ps> getPsById(String encodedPsId) {
+    public ResponseEntity<Ps> getPsById(String encodedPsId, String include) {
+        String[] optionalFields = include != null ? include.split(",") : new String[]{};
+
         String psId = URLDecoder.decode(encodedPsId, StandardCharsets.UTF_8);
         PsRef psRef = psRefRepository.findPsRefByNationalIdRef(psId);
 
@@ -45,8 +50,12 @@ public class PsApiDelegateImpl implements PsApiDelegate {
 
         String nationalId = psRef.getNationalId();
         Ps ps = psRepository.findByNationalId(nationalId);
-        List<PsRef> allPsRefs = psRefRepository.findAllByNationalId(nationalId);
-        ps.extractOtherIds(allPsRefs);
+
+        if (Arrays.asList(optionalFields).contains(OTHER_IDS)) {
+            List<PsRef> allPsRefs = psRefRepository.findAllByNationalId(nationalId);
+            ps.extractOtherIds(allPsRefs);
+        }
+
         log.info("Ps {} has been found", nationalId);
         return new ResponseEntity<>(ps, HttpStatus.OK);
     }

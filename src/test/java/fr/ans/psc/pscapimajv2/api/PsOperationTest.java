@@ -64,7 +64,6 @@ public class PsOperationTest extends BaseOperationTest {
     public void getPsById() throws Exception {
 
         Ps storedPs = psRepository.findByNationalId("800000000001");
-        storedPs.extractOtherIds(psRefRepository.findAllByNationalId("800000000001"));
 
         String psAsJsonString = objectWriter.writeValueAsString(storedPs);
 
@@ -83,7 +82,33 @@ public class PsOperationTest extends BaseOperationTest {
 
         secondPsRefRequest.andExpect(content().json(psAsJsonString));
         assertThat(memoryAppender.contains("Ps 800000000001 has been found", Level.INFO)).isTrue();
+    }
 
+    @Test
+    @DisplayName(value = "should get Ps by id, nominal case")
+    @MongoDataSet(value = "/dataset/ps_2_psref_entries.json", cleanBefore = true, cleanAfter = true)
+    public void getPsByIdWithOtherIds() throws Exception {
+
+        Ps storedPs = psRepository.findByNationalId("800000000001");
+        storedPs.extractOtherIds(psRefRepository.findAllByNationalId("800000000001"));
+
+        String psAsJsonString = objectWriter.writeValueAsString(storedPs);
+
+        ResultActions firstPsRefRequest = mockMvc.perform(get("/api/v2/ps/800000000001?include=otherIds")
+                .header("Accept", "application/json"))
+                .andExpect(status().is(200));
+
+        firstPsRefRequest.andExpect(content().json(psAsJsonString));
+        assertThat(memoryAppender.contains("Ps 800000000001 has been found", Level.INFO)).isTrue();
+
+        firstPsRefRequest.andDo(document("PsOperationTest/get_Ps_by_id"));
+
+        ResultActions secondPsRefRequest = mockMvc.perform(get("/api/v2/ps/800000000011?include=otherIds")
+                .header("Accept", "application/json"))
+                .andExpect(status().is(200));
+
+        secondPsRefRequest.andExpect(content().json(psAsJsonString));
+        assertThat(memoryAppender.contains("Ps 800000000001 has been found", Level.INFO)).isTrue();
     }
 
     @Test
@@ -99,7 +124,6 @@ public class PsOperationTest extends BaseOperationTest {
     @MongoDataSet(value = "/dataset/psEncodedId.json", cleanBefore = true, cleanAfter = true)
     public void getPsByEncodedId() throws Exception {
         Ps storedPs = psRepository.findByNationalId("80000000000/1");
-        storedPs.extractOtherIds(psRefRepository.findAllByNationalId("80000000000/1"));
         String psAsJsonString = objectWriter.writeValueAsString(storedPs);
         ResultActions psRefRequest = mockMvc.perform(get("/api/v2/ps/80000000000%2F1")
                 .header("Accept", "application/json"))

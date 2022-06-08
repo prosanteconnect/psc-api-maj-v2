@@ -185,13 +185,14 @@ paths:
         name: psId
         in: path
         required: true
-      - in: query
-        name: include
-        schema:
-          type: string
-        required: false
     get:
       summary: Get Ps by id
+      parameters:
+        - in: query
+          name: include
+          schema:
+            type: string
+          required: false
       tags:
         - ps
       operationId: get-ps-by-id
