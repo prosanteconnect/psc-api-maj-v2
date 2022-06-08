@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -44,6 +45,8 @@ public class PsApiDelegateImpl implements PsApiDelegate {
 
         String nationalId = psRef.getNationalId();
         Ps ps = psRepository.findByNationalId(nationalId);
+        List<PsRef> allPsRefs = psRefRepository.findAllByNationalId(nationalId);
+        ps.extractOtherIds(allPsRefs);
         log.info("Ps {} has been found", nationalId);
         return new ResponseEntity<>(ps, HttpStatus.OK);
     }

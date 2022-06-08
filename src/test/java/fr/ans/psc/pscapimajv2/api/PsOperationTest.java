@@ -33,6 +33,9 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PsOperationTest extends BaseOperationTest {
 
     @Autowired
@@ -61,6 +64,8 @@ public class PsOperationTest extends BaseOperationTest {
     public void getPsById() throws Exception {
 
         Ps storedPs = psRepository.findByNationalId("800000000001");
+        storedPs.extractOtherIds(psRefRepository.findAllByNationalId("800000000001"));
+
         String psAsJsonString = objectWriter.writeValueAsString(storedPs);
 
         ResultActions firstPsRefRequest = mockMvc.perform(get("/api/v2/ps/800000000001")
@@ -82,10 +87,19 @@ public class PsOperationTest extends BaseOperationTest {
     }
 
     @Test
+    @DisplayName(value = "should get all PsRef by id, nominal case")
+    @MongoDataSet(value = "/dataset/ps_2_psref_entries.json", cleanBefore = true, cleanAfter = true)
+    public void getAllPsRefs() {
+        List<PsRef> allPsRefs = psRefRepository.findAllByNationalId("800000000001");
+        assertEquals(2, allPsRefs.size());
+    }
+
+    @Test
     @DisplayName("check encoded url")
     @MongoDataSet(value = "/dataset/psEncodedId.json", cleanBefore = true, cleanAfter = true)
     public void getPsByEncodedId() throws Exception {
         Ps storedPs = psRepository.findByNationalId("80000000000/1");
+        storedPs.extractOtherIds(psRefRepository.findAllByNationalId("80000000000/1"));
         String psAsJsonString = objectWriter.writeValueAsString(storedPs);
         ResultActions psRefRequest = mockMvc.perform(get("/api/v2/ps/80000000000%2F1")
                 .header("Accept", "application/json"))

@@ -185,6 +185,11 @@ paths:
         name: psId
         in: path
         required: true
+      - in: query
+        name: include
+        schema:
+          type: string
+        required: false
     get:
       summary: Get Ps by id
       tags:
@@ -632,6 +637,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Profession'
+        otherIds:
+          type: array
+          items:
+            type: string
       required:
         - nationalId
       x-examples:
@@ -691,6 +700,7 @@ components:
                       email: structure@one.fr
                       departmentCode: '99'
                       oldStructureId: '101'
+          otherIds: ['800000000001', '100000000004']
     Error:
       title: Error
       type: object
