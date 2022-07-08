@@ -30,7 +30,7 @@ app "prosanteconnect/psc-api-maj-v2" {
     # Uncomment below to use a remote docker registry to push your built images.
     registry {
       use "docker" {
-        image = "${var.registry_path}/psc-api-maj"
+        image = "${var.registry}/psc-api-maj"
         tag = gitrefpretty()
         username = var.registry_username
         password = var.registry_password
@@ -54,13 +54,17 @@ variable "datacenter" {
 }
 
 variable "registry_username" {
-  type = string
+  type    = string
   default = ""
+  env     = ["REGISTRY_USERNAME"]
+  sensitive = true
 }
 
 variable "registry_password" {
-  type = string
+  type    = string
   default = ""
+  env     = ["REGISTRY_PASSWORD"]
+  sensitive = true
 }
 
 variable "proxy_address" {
@@ -73,7 +77,8 @@ variable "dockerfile_path" {
   default = "Dockerfile"
 }
 
-variable "registry_path" {
+variable "registry" {
   type = string
   default = "registry.repo.proxy-dev-forge.asip.hst.fluxus.net/prosanteconnect"
+  env = ["REGISTRY"]
 }
