@@ -46,6 +46,14 @@ app "prosanteconnect/psc-api-maj-v2" {
       })
     }
   }
+  
+  release {
+    use "nomad-jobspec-canary" {
+      groups = [
+        "app"
+      ]
+    }
+  }
 }
 
 variable "datacenter" {
